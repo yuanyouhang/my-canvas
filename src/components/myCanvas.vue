@@ -1,73 +1,66 @@
 <template>
-  <div class="home">
-    <div class="origin-img-wrapper" style="flex: 1;height: 100%;">
-      <img src="../assets/canvas-img.jpg" ref="originImgRef">
+  <div class="wrapper">
+    <div style="margin-right: 30px;position: relative;">
+      <div class="tools-wrapper" style="margin-bottom: 50px;">
+        <div
+          v-for="item in tools"
+          :key="item"
+          class="tool-item"
+          :class="{'tool-item-selected': curtool === item}"
+          @click="setUsingTool(item)"
+        >
+          {{ item }}
+        </div>
+      </div>
+      
+      <div style="margin-bottom: 50px;">
+        <div style="margin-bottom: 20px;">当前步数：{{ canvasDataRecords.length }}</div>
+        <div class="save-btn" :class="{'disabled-btn': canvasDataRecords.length === 1}" @click="drawPreData">
+          回退
+        </div>
+        <div class="save-btn" @click="resetCanvasImg">
+          重置
+        </div>
+        <div class="save-btn" @click="saveCanvasImg">
+          保存
+        </div>
+      </div>
+
+      <div v-show="showWidthSelector" style="position: absolute;left: 50%;transform: translateX(-50%);">
+        <div class="change-width-wrapper" style="margin-bottom: 50px;">
+          <div
+            class="width-item"
+            :class="{'width-item-selected': item.name === selectedWidth.name}"
+            v-for="item in widthLevel"
+            :key="item.name"
+            @click="selectedWidth = item"
+          >
+            {{ item.name }}
+          </div>
+        </div>
+        <div class="color-selector-wrapper">
+          <div
+            class="color-item"
+            :class="{'color-item-selected': item === drawcolor}"
+            v-for="item in colorArr"
+            :style="{backgroundColor: item}"
+            :key="item"
+            @click="drawcolor = item"
+          >
+            {{ item.name }}
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="right">
-      <div style="margin-right: 30px;position: relative;">
-        <div class="tools-wrapper" style="margin-bottom: 50px;">
-          <div
-            v-for="item in tools"
-            :key="item"
-            class="tool-item"
-            :class="{'tool-item-selected': curtool === item}"
-            @click="setUsingTool(item)"
-          >
-            {{ item }}
-          </div>
-        </div>
-        
-        <div style="margin-bottom: 50px;">
-          <div style="margin-bottom: 20px;">当前步数：{{ canvasDataRecords.length }}</div>
-          <div class="save-btn" :class="{'disabled-btn': canvasDataRecords.length === 1}" @click="drawPreData">
-            回退
-          </div>
-          <div class="save-btn" @click="resetCanvasImg">
-            重置
-          </div>
-          <div class="save-btn" @click="saveCanvasImg">
-            保存
-          </div>
-        </div>
-
-        <div v-show="showWidthSelector" style="position: absolute;left: 50%;transform: translateX(-50%);">
-          <div class="change-width-wrapper" style="margin-bottom: 50px;">
-            <div
-              class="width-item"
-              :class="{'width-item-selected': item.name === selectedWidth.name}"
-              v-for="item in widthLevel"
-              :key="item.name"
-              @click="selectedWidth = item"
-            >
-              {{ item.name }}
-            </div>
-          </div>
-          <div class="color-selector-wrapper">
-            <div
-              class="color-item"
-              :class="{'color-item-selected': item === drawcolor}"
-              v-for="item in colorArr"
-              :style="{backgroundColor: item}"
-              :key="item"
-              @click="drawcolor = item"
-            >
-              {{ item.name }}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="canvas-area">
-        <canvas class="my-canvas" id="myCanvas"></canvas>
-      </div>
+    <div class="canvas-area">
+      <canvas class="my-canvas" id="myCanvas"></canvas>
     </div>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'HomeView',
   data() {
     return {
       tools: [
@@ -92,6 +85,12 @@ export default {
       canvasElement: null,
       startPointX: 0,
       startPointY: 0,
+    }
+  },
+
+  props: {
+    bgImg: {
+      type: Object,
     }
   },
 
@@ -123,7 +122,8 @@ export default {
       this.canvasElement = canvas
       const ctx = canvas.getContext('2d')
       this.canvasContext = ctx
-      const img = this.$refs.originImgRef
+      const img = new Image(this.bgImg.width, this.bgImg.height)
+      img.src = this.bgImg.src
       img.onload = () => {
         canvas.width = img.width
         canvas.height = img.height
@@ -295,80 +295,20 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.home {
-  height: calc(100% - 8px);
+.wrapper {
+  padding: 30px;
+  height: 100%;
+  position: relative;
   display: flex;
-  .origin-img-wrapper {
-    img {
-      height: 100%;
-      // width: 100%;
-      object-fit: contain;
-    }
-  }
-
-  .right {
-    flex: 1;
-    height: 100%;
+  .canvas-area {
     position: relative;
-    display: flex;
-    .canvas-area {
-      position: relative;
-      background-color: transparent;
-      width: fit-content;
-      height: fit-content;
-    }
-    .tools-wrapper {
-      font-size: 22px;
-      .tool-item {
-        color: blue;
-        cursor: pointer;
-        width: 100px;
-        height: 40px;
-        line-height: 36px;
-        text-align: center;
-        border: 2px solid blue;
-        border-radius: 5px;
-        margin-bottom: 12px;
-      }
-      .tool-item-selected {
-        color: white;
-        background-color: blue;
-      }
-    }
-    .change-width-wrapper {
-      font-size: 16px;
-      .width-item {
-        color: blue;
-        cursor: pointer;
-        width: 46px;
-        height: 46px;
-        line-height: 44px;
-        text-align: center;
-        border: 1px solid blue;
-        border-radius: 50%;
-        margin-bottom: 20px;
-      }
-      .width-item-selected {
-        color: white;
-        background-color: blue;
-      }
-    }
-    .color-selector-wrapper {
-      .color-item {
-        width: 46px;
-        height: 46px;
-        border-radius: 50%;
-        &:not(:last-child) {
-          margin-bottom: 20px;
-        }
-      }
-      .color-item-selected {
-        transform: scale(1.2);
-        box-shadow: 0px 3px 3px black;
-      }
-    }
-    .save-btn {
-      font-size: 22px;
+    background-color: transparent;
+    width: fit-content;
+    height: fit-content;
+  }
+  .tools-wrapper {
+    font-size: 22px;
+    .tool-item {
       color: blue;
       cursor: pointer;
       width: 100px;
@@ -379,11 +319,59 @@ export default {
       border-radius: 5px;
       margin-bottom: 12px;
     }
-    .disabled-btn {
-      color: #fff;
-      background-color: rgb(146, 140, 140);
-      border: 2px solid rgb(146, 140, 140);
+    .tool-item-selected {
+      color: white;
+      background-color: blue;
     }
+  }
+  .change-width-wrapper {
+    font-size: 16px;
+    .width-item {
+      color: blue;
+      cursor: pointer;
+      width: 46px;
+      height: 46px;
+      line-height: 44px;
+      text-align: center;
+      border: 1px solid blue;
+      border-radius: 50%;
+      margin-bottom: 20px;
+    }
+    .width-item-selected {
+      color: white;
+      background-color: blue;
+    }
+  }
+  .color-selector-wrapper {
+    .color-item {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      &:not(:last-child) {
+        margin-bottom: 20px;
+      }
+    }
+    .color-item-selected {
+      transform: scale(1.2);
+      box-shadow: 0px 3px 3px black;
+    }
+  }
+  .save-btn {
+    font-size: 22px;
+    color: blue;
+    cursor: pointer;
+    width: 100px;
+    height: 40px;
+    line-height: 36px;
+    text-align: center;
+    border: 2px solid blue;
+    border-radius: 5px;
+    margin-bottom: 12px;
+  }
+  .disabled-btn {
+    color: #fff;
+    background-color: rgb(146, 140, 140);
+    border: 2px solid rgb(146, 140, 140);
   }
 }
 </style>
