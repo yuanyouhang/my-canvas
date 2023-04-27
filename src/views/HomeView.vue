@@ -1,6 +1,6 @@
 <template>
   <div class="home">
-    <div class="origin-img-wrapper" style="flex: 1;height: 100%;">
+    <div class="origin-img-wrapper" style="flex: 1;">
       <img src="../assets/canvas-img.jpg" ref="originImgRef">
     </div>
 
@@ -299,9 +299,10 @@ export default {
   height: calc(100% - 8px);
   display: flex;
   .origin-img-wrapper {
+    margin-right: 30px;
     img {
-      height: 100%;
-      // width: 100%;
+      // height: 100%;
+      width: 100%;
       object-fit: contain;
     }
   }

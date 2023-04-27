@@ -1,6 +1,6 @@
 <template>
   <div class="wrapper">
-    <div style="margin-right: 30px;position: relative;">
+    <div style="position: relative;">
       <div class="tools-wrapper" style="margin-bottom: 50px;">
         <div
           v-for="item in tools"
@@ -25,37 +25,39 @@
           保存
         </div>
       </div>
+    </div>
 
-      <div v-show="showWidthSelector" style="position: absolute;left: 50%;transform: translateX(-50%);">
-        <div class="change-width-wrapper" style="margin-bottom: 50px;">
-          <div
-            class="width-item"
-            :class="{'width-item-selected': item.name === selectedWidth.name}"
-            v-for="item in widthLevel"
-            :key="item.name"
-            @click="selectedWidth = item"
-          >
-            {{ item.name }}
-          </div>
+    <div class="canvas-area" style="margin: 0 30px;">
+      <canvas class="my-canvas" id="myCanvas"></canvas>
+    </div>
+
+    <div :style="{ visibility: showWidthSelector ? 'visible': 'hidden'}">
+      <div class="change-width-wrapper" style="margin-bottom: 50px;">
+        <div
+          class="width-item"
+          :class="{'width-item-selected': item.name === selectedWidth.name}"
+          v-for="item in widthLevel"
+          :key="item.name"
+          @click="selectedWidth = item"
+        >
+          {{ item.name }}
         </div>
-        <div class="color-selector-wrapper">
-          <div
-            class="color-item"
-            :class="{'color-item-selected': item === drawcolor}"
-            v-for="item in colorArr"
-            :style="{backgroundColor: item}"
-            :key="item"
-            @click="drawcolor = item"
-          >
-            {{ item.name }}
-          </div>
+      </div>
+      <div class="color-selector-wrapper">
+        <div
+          class="color-item"
+          :class="{'color-item-selected': item === drawcolor}"
+          v-for="item in colorArr"
+          :style="{backgroundColor: item}"
+          :key="item"
+          @click="drawcolor = item"
+        >
+          {{ item.name }}
         </div>
       </div>
     </div>
 
-    <div class="canvas-area">
-      <canvas class="my-canvas" id="myCanvas"></canvas>
-    </div>
+    <img width="0" height="0" src="../assets/canvas-img.jpg" alt="" ref="imgRef">
   </div>
 </template>
 
@@ -122,12 +124,12 @@ export default {
       this.canvasElement = canvas
       const ctx = canvas.getContext('2d')
       this.canvasContext = ctx
-      const img = new Image(this.bgImg.width, this.bgImg.height)
-      img.src = this.bgImg.src
+      const img = this.$refs.imgRef
+      console.log(img.src)
       img.onload = () => {
-        canvas.width = img.width
-        canvas.height = img.height
-        ctx.drawImage(img, 0, 0, img.width , img.height)
+        canvas.width = img.naturalWidth
+        canvas.height = img.naturalHeight
+        ctx.drawImage(img, 0, 0, img.naturalWidth , img.naturalHeight)
         this.saveLastData()
       }
       this.addCanvasEvent()
@@ -241,39 +243,45 @@ export default {
     handleMouseUp(e) {
       const canvas = this.canvasElement
       const ctx = this.canvasContext
-      if (this.curtool === 'text' && e.offsetX - this.startPointX >= 20 && e.offsetY - this.startPointY >= 20) {
-        let input = document.createElement('input')
-        let canvasArea = document.getElementsByClassName('canvas-area')[0]
-        canvasArea.appendChild(input)
-        let textvalue = ''
-        input.style.position = "absolute"
-        input.style.left = `${this.startPointX + 5}px`
-        input.style.top = `${this.startPointY + 5}px`
-        input.style.width = `${e.offsetX - this.startPointX - 10}px`
-        input.style.height = `${e.offsetY - this.startPointY - 10}px`
-        input.style.fontSize =`18px`
-        input.style.backgroundColor = 'transparent'
-        input.style.border = 'none'
-        input.style.outline = 'none'
-        input.addEventListener('input', (e) => {
-          textvalue = e.target.value
-        })
-        input.addEventListener('keydown', (e) => {
-          if(e.key === 'Enter') {
-            input.blur()
-          }
-        })
-        input.addEventListener('blur', () => {
-          ctx.clearRect(0, 0, 1000, 1000)
-          if(this.lastCanvasData != null) {
-            ctx.putImageData(this.lastCanvasData, 0, 0)
-          }
-          canvasArea.removeChild(input)
-          ctx.font=`18px sans-serif`
-          ctx.fillText(textvalue, parseInt(input.style.left + 5), parseInt(input.style.top) + parseInt(input.style.height) / 2 + 5)
+      if (this.curtool === 'text') {
+        if(e.offsetX - this.startPointX >= 20 && e.offsetY - this.startPointY >= 20) {
+          let input = document.createElement('input')
+          let canvasArea = document.getElementsByClassName('canvas-area')[0]
+          canvasArea.appendChild(input)
+          let textvalue = ''
+          input.style.position = "absolute"
+          input.style.left = `${this.startPointX + 5}px`
+          input.style.top = `${this.startPointY + 5}px`
+          input.style.width = `${e.offsetX - this.startPointX - 10}px`
+          input.style.height = `${e.offsetY - this.startPointY - 10}px`
+          input.style.fontSize =`18px`
+          input.style.backgroundColor = 'transparent'
+          input.style.border = 'none'
+          input.style.outline = 'none'
+          input.addEventListener('input', (e) => {
+            textvalue = e.target.value
+          })
+          input.addEventListener('keydown', (e) => {
+            if(e.key === 'Enter') {
+              input.blur()
+            }
+          })
+          input.addEventListener('blur', () => {
+            ctx.clearRect(0, 0, 1000, 1000)
+            if(this.lastCanvasData != null) {
+              ctx.putImageData(this.lastCanvasData, 0, 0)
+            }
+            canvasArea.removeChild(input)
+            ctx.font=`18px sans-serif`
+            ctx.fillText(textvalue, parseInt(input.style.left + 5), parseInt(input.style.top) + parseInt(input.style.height) / 2 + 5)
+            this.saveLastData()
+          })
+          input.focus()
+        }
+        else {
+          this.drawPreData()
           this.saveLastData()
-        })
-        input.focus()
+        }
       }
       else {
         this.saveLastData()
@@ -300,6 +308,7 @@ export default {
   height: 100%;
   position: relative;
   display: flex;
+  justify-content: center;
   .canvas-area {
     position: relative;
     background-color: transparent;
